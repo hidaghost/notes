@@ -34,3 +34,4 @@
     - methods or functions should be first-class object
     - methods or functions should have the ability to reference
       local varibles in some binding context out of itself
+    - objects & closures are just the two sides of a coin

@@ -1,0 +1,251 @@
+* Python3 & perhaps python2
+
+** iterators, iterable, iteration context
+
+*** iteration protocol:
+    1. iteration context will first try `iter' on object to get its iterator, which calls 
+       `__iter__' on it
+    2. if the object responds to `iter', try `next' on the result `iter' returns to iterate,
+       which calls `__next__' on it(in python2, calls `next')
+    3. if not, falls back on indexing protocol
+
+** functions & generators 
+   "function definition executes at runtime"
+
+*** functions in python are first-class objects!
+
+*** scopes
+1. scope lookup: LEGB (Local -> Enclosing/Nonlocal -> Global -> Built-in)
+2. enclosing means enclosing functions, not enclosing classes
+3. scope of comprehensions and exception variables varies per python version
+4. each function call creates a scope, but each class call creates per-object state
+
+**** `global' & `nonlocal': namespace declarations
+    when using `nonlocal', the variable(s) must exist in the enclosing scope first
+
+**** loop variables may require defaults, not scopes:
+#+BEGIN_SRC python3
+def makeFun():
+    fs = []
+    for i in range(5):
+        fs.append(lambda x, i=i: i ** x)
+    return fs
+#+END_SRC
+
+**** state retention options:
+1. globals
+2. nonlocals
+3. classes
+4. function attributes
+
+*** function arguments
+    1. arguments passing are exactly made by assignments
+    2. argument names are local names of the function
+    3. change a mutable object argument in a function may impact the caller
+
+**** tuple unpacking argument syntax of function / lambda is only allowed in python2
+
+**** argument matching modes:
+     1. positionals
+     2. keywords
+     3. defaults
+     4. varargs collecting
+     5. varargs unpacking
+     6. keyword-only arguments(only in python3)
+
+**** argument matching rules:
+     1. in function call: 
+       combinations of *, positionals -> combinations of keywords, *, **(* must appear before **)
+     2. in function header: 
+       positionals -> defaults -> * -> keyword-only -> **
+
+**** apply (only in python2):
+     func(*args, **kargs) <=> apply(func, args, kargs)
+
+*** recursion
+     1. direct (e.g. foo() -> foo() -> foo() -> ...)
+     2. indirect (e.g. foo() -> bar() -> foo() -> bar() -> ...)
+
+*** function annotations (only in python3):
+     1. argument annotation must appears after a colon immediately following 
+        the argument's name
+     2. return values appear after a -> following the arguments list
+
+*** `lambda' is an expression, `def' is a statement
+****  lambda body is a single expression
+
+*** functional programming tools:
+    1. map, filter, reduce
+    2. first-class object model, nested scope closures, lambdas
+    3. generators, comprehensions
+
+*** generators:
+    generators are single-iteration objects
+    1. generator functions
+    2. generator expressions
+
+** modules
+   module in python provides namespace, and each python file is a module
+
+*** modules' three roles:
+    1. code reuse
+    2. system namespace partitioning
+    3. implementing shared services or data
+
+*** imports
+    1. find the module's file
+    2. if needed, compile it to byte code
+    3. run the module's code to build the objects it defines
+    4. once loaded, the module is stored in `sys.modules' (in memory)
+    5. the same module imported later will be fetched directly from `sys.modules'
+
+**** find module
+     1. the home directory of the program
+     2. PYTHONPATH directories (env variables, if set)
+     3. standard library directories
+     4. the contents of any .pth files (if present)
+     5. the site-packages home of third-party extensions
+  from 1 to 5 concatenates to => `sys.path'
+
+**** reload module
+     use `imp.reload' function in 3.x, `reload' in 2.x
+
+**** module packages
+     1. a package directory must contain a __init__.py initialization file
+     2. a __all__ list in __init__.py file lists the names imported when use *,
+	otherwises will be the names in the top-level assignment 
+
+**** package relative imports
+     "when use relative import, the package contains that module cannot be 
+     runned as a program"
+     "if you want a package to be both package and program, use full package
+     imports, and it works the same in 2.x and 3.x"
+
+     1. without from dot, import in 3.x always means absolute(only search sys.path)
+     2. without from dot, import in 2.x first try relative then absolute
+     3. with from dot, import in both means relative-only
+
+**** namespace package (3.3 and later)
+     packages with a same name in the `sys.path' neither without `__init__.py'
+     files will be imported as a namespace package, which containts a 
+     `__path__' attribute listing all the path to those packages.  The packages 
+     altogether form the namespace
+     
+**** other module features
+     1. data hiding: minimize `from *' damage `_x' and `__all__' (both works on 
+        for `from *')
+     2. `__future__' features
+     3. mixed usage modes: `__name__' and `__main__'
+     4. if module name is a string, use `exec("import "+ name)' (may be slow 
+        because of compilation)
+	or use `var = __import__(name)' and `var = importlib.import_module(name)'
+
+** classes
+
+*** two aspects:
+    1. inheritance
+    2. composition
+
+*** three distinctions ( from module ):
+    1. multiple instances
+    2. customization via inheritance
+    3. operator overloading
+
+*** namespaces:
+    - __dict__ attribute shows the namespace only in the object
+    - dir(object) shows the namespaces in the object and its inheritance tree
+
+*** operator overloading:
+    1. __getitem__ is also the iteration fallback option
+       __getitem__ & __setitem__ both works for index & slice in 3.X & 2.X; 
+       __getslice__ & __setslice__ can intercept slice fetches in 2.X if defined,
+       preferred over __getitem__ & __setitem__, but only for two-limit slices
+    2. 3.X's __index__ is not indexing, it is used in contexts that require an int
+    3. general iteration context: __iter__ & __next__:
+       single scan: __iter__ returns self
+       multiple scan: __iter__ returns other object with __next__, or use yield
+    4. membership test( `in' ):
+       try __contains__ first, then __iter__, then __getitem__
+    5. attribute access: __getattr__ & __setattr__
+       __getattr__ intercepts undefined attribute
+       __setattr__ intercepts all attribute assignment!  be careful to avoid 
+         recursive loops.  (use __dict__ or superclass' __setattr__ for routing)
+       __delattr__ intercepts when using like `del obj.attr', also be careful to 
+         avoid recursive loops.
+    6. string representation: __str__ & __repr__
+       be careful to avoid recursion in __repr__ when display the methods in a
+       class (which will trigger __repr__ to display the methods' class by default)
+    7. call expression: __call__
+    8. comparisons: __lt__, __gt__ & others
+       both __cmp__ and cmp function are removed from 3.X
+       __cmp__ in 2.X is used as a fallback if no more specific methods defined
+    9. boolean tests: __bool__, __len__
+       in 3.X, first try __bool__, if not defined, try __len__
+       in 2.X, first try __nonzero__, if not defined, try __len__
+    10. object destruction: __del__
+
+*** Pseudoprivate attributes: name mangling
+    any names that start with two underscores but don't end with two underscores
+    are automatically expanded to include the enclosing class' name at their front.  
+    but it's still not true privacy.
+
+*** methods are objects: bound methods & unbound methods
+    - unbound methods are functions in 3.X
+
+*** new-style class changes:
+**** __X__ attribute fetch for built-ins: instance skipped
+     - interceptions of built-in operations will skip instances in new-style class
+       (e.g. print(x) searching __str__ or __repr__ begins from x's class, not from x)
+     - __getattr__ in new-style class will not intercept __X__ methods used by 
+       built-in operations
+
+**** inheritance search order: multiple inheritance and diamonds
+     - attribute resolution differs in classic classes and new-style classes.
+       in classic classes(only in 2.X): depth-first, then left-to-right.
+       in new-style classes: more breadth-first(new-style MRO(method resolution order)).
+     - trace the search order with __mro__ attribute on new style classes.
+
+**** classes and types merged: type testing
+     - type is the class of all the class objects, as known as metaclass.
+
+**** automatic root class
+     - all classes in 3 have `object' class as its default root class.
+
+**** new advanced tools
+     - slots, properties, descriptors, super and __getattribute__...
+
+*** new advanced tools: slots, properties, descriptors, super ...
+**** slots:
+     - when a class defines __slots__ without __dict__ name, its instance 
+       will not have an attribute namespace dictionary.
+     - when multiple superclasses have __slots__, only the lowest will be
+       accessed with instance.__slots__
+     - slots in subs when absent in supers(or vice versa) will be pointless
+     - redefinition makes super slots pointless
+     - slots prevent class-level defaults
+
+**** properties:
+     - intercept attribute access for some given attributes
+
+**** static and class methods:
+     `staticmethod' & `classmethod'
+     - both functions are required to enable these special method modes in 2.X,
+       and are generally needed in 3.X.  staticmethod declaration is only required 
+       if such methods are called through instances in 3.X.
+
+**** decorators:
+     - function decorators and method decorators (more or less metafunctions)
+     - class decorators (more or less metaclasses)
+
+**** super:
+     - `super' is a proxy class
+     - `super' will naively pick just the leftmost superclass in the MRO
+     - `super' doesn't fully work in the presence of __X__ operator methods (
+       builtin operators attribute fetch skip instances)
+
+** common std lib modules:
+   1. os (for underlying os)
+   2. sys (for python compiler and virtual machine)
+   3. timeit (recording and timing code executes time for analysis)
+   4. profile (complete source code profiler tool)
+   5. glob (get directory listings)
