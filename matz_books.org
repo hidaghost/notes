@@ -1,9 +1,36 @@
-* 松本行弘书籍读书笔记
+* notes of Matz' books 
 
-** 松本行弘的程序世界
-
-*** Ruby的设计原则
+*** Ruby 设计原则
     1. 简洁性（语法简洁）
     2. 扩展性（可以通过抽象，扩展类，dsl扩展语言本身）
     3. 稳定性（语法稳定）
 
+**  Overview of program language history
+*** DSL
+    a language designed for specialized domain(s)
+    - good API makes good DSL
+
+*** Metaprogramming
+    - narrow: use reflection to modify program itself 
+              (enhancements in most cases)
+    - broad: code generations
+
+*** GC
+    - methods:
+      a. reference counts (not good when deal with cycle reference)
+      b. mark swipe
+      c. mark compact
+      d. region copy
+
+    - strategies:
+      a. generation GC
+      b. incremental GC
+      c. concurrent GC
+
+*** Exceptions
+    - should have good exception handle mechanism
+
+*** Closure
+    - methods or functions should be first-class object
+    - methods or functions should have the ability to reference
+      local varibles in some binding context out of itself
