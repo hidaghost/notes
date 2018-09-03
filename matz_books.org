@@ -17,15 +17,15 @@
 
 *** GC
     - methods:
-      a. reference counts (not good when deal with cycle reference)
-      b. mark swipe
-      c. mark compact
-      d. region copy
+      - reference counts (not good when deal with cycle reference)
+      - mark swipe
+      - mark compact
+      - region copy
 
     - strategies:
-      a. generation GC
-      b. incremental GC
-      c. concurrent GC
+      - generation GC
+      - incremental GC
+      - concurrent GC
 
 *** Exceptions
     - should have good exception handle mechanism
