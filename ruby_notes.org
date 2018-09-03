@@ -1,0 +1,284 @@
+* Ruby 
+
+Remember, happy coding!
+
+- ruby is a pure OOP language
+- everything in ruby is expression
+
+** Comments
+   - from `#' to the line end, line comment
+   - embedded documents, [ `=begin' .. `=end; ], and it works only if the `=' 
+     tokens are the first characters of each line
+   - documentation comments: same as embedded documents, except use `=begin rdoc'
+     to tell rdoc to process these comments
+
+** Obj string representation:
+   - `to_s', user-friendly representation
+   - `inspect', programmer-friendly representation
+
+** __END__
+   - marks the end of a file, all contents followed it can be used as IO stream 
+     object `DATA'
+
+** Execution
+   - executes any `BEGIN' part
+   - reaches the end of a file or `__END__'
+   - executes any `END' part or code registered with `at_exit' function, if not 
+     `exit!' called
+
+** Datatypes
+*** Integer
+    - Integers can be indexed to query individual bits
+    - `require "math"' for math
+
+*** String
+    - sequence `%q' begins a string literal follows single-quoted string rules,
+      `%Q' or `%' follows double-quoted string rules
+
+*** backtick command execution
+    - `cmd` is the same as `Kernel.` "cmd"' or `%x[cmd]', backtick processed like
+      a double-quoted string literal
+
+*** Array
+    - shortcuts: `%w' and `%W' delimiters introduces array literals whose elements
+      are strings without spaces
+
+*** Hash
+    - key in a hash must have a `hash' method that returns a `Integer' hashcode 
+      for the key
+
+*** Range
+    - range endpoints must define `<=>' comparison operator and `succ'
+    - ranges has two types: discrete and continuous, depending on its endpoints
+    - so, membership test also has two types: discrete and continuous
+    - `cover?' always use the continuous membership test, yet `include?' and 
+      `member?' depends. they use continuous membership test if endpoints are
+      numeric, use discrete membership test any others.
+    - when used in a conditional, acts like a flip-flop expression
+
+*** Regular expression
+    - shortcuts: `%r' delimiter
+    - $& matched portion; $` prematch; $' postmatch
+**** re options:
+     - i:  case insensitive
+     - o:  substitute once
+     - m:  multiline mode('.' matches any character including newline)
+     - x:  extended mode
+
+*** Symbol
+    - shortcuts: `%s' delimiter
+
+
+** Objects relative issues
+*** Immediate values:
+    - they cannot have singleton methods defined on them, such as Integer and Symbol.
+
+*** Equality tests
+    - `equal?' test if two object have the same `object_id'
+    - `eql?' strict version of `=='
+    - `==' reasonable definition of equality
+    - `===' case equality
+    - `=~' pattern match
+
+*** Ordering
+    - ruby classes define an ordering by implementing the `<=>' operator.
+
+*** Conversions
+    - explicit conversion methods, e.g. `to_s', `to_i' (loose conversion)
+    - implicit conversion methods, e.g. `to_ary', `to_int', implement them only
+      if the object naturally be used as those types (strict conversion)
+    - 1.9 and afterwards, some builtin classes define a `try_convert' method for
+      implicit conversion on their arguments
+    - numeric types define a `coerce' for compatible types arithmetic operation.
+      it returns an array holds two numeric values of the same type, the first 
+      element is the converted value of the argument to coerce
+
+*** Copy objects
+    - `dup' only copies the tainted state
+    - `clone' copies both the frozen and tainted state, along with the singleton
+      methods of the object
+    - classes can define `initialize_copy' for copy customization
+
+*** Marshaling objects
+    - `Marshal.dump' and `Marshal.load'
+    - yaml can be used as an alternative, `require "yaml"' first
+
+*** Freezing objects
+    - once frozen, there is no way to thaw an object, use `dup' to get an copy
+      which is not frozen
+
+*** Tainted objects
+    - any object derived from a tainted object will also be tainted
+    - untaint an object with `untaint' method
+
+** Simple expressions
+*** uninitialized variables
+    - class variables: raise a `NameError'
+    - instance variables: `nil'
+    - global variables: `nil'
+    - local variables: raise a `NameError', or `nil' if interpreter sees an 
+      assignment but not actually executed
+
+*** parallel assignment
+    - define a `to_splat' method to return an array of values when used as 
+      rvalue in parallel assignments with `*' before itself
+
+*** defined? operator
+    - it is simply checked to see whether the operand could be evaluated without
+      error, the operand is not actually evaluated.
+
+*** keywords in iteration
+    break, redo, next
+
+** Exceptions
+   - parameters to the `rescue' clause can be arbitary expressions that return
+     an `Exception' class
+#+BEGIN_SRC ruby
+begin
+  work
+rescue RuntimeError => e
+  fix
+else
+  no_error_happened
+ensure
+  clean_up
+end
+#+END_SRC
+   - `retry' can be used to repeat the entire begin/end block
+   - catch/throw can be a lightweight exception handling for jumping out of some
+     deeply nested constructs or loops.  If `throw' is passed a second parameter,
+     the value is returned as the value of `catch'.  If no `catch' matches `throw',
+     Ruby raises an `ArgumentError' at the location of `throw'
+#+BEGIN_SRC ruby
+catch obj do
+  work
+  throw obj[, result]
+end
+#+END_SRC
+   - rescue modifier takes no exception parameters and rescues `StandError' and
+     its children
+
+** Methods
+*** arguments
+**** in method definition
+     - only one splat argument(`*') can appear in an argument list, and no default
+       values appear after splat argument
+     - keyword argument list can only appear before `**' or `&' and after regular
+       arguments, default values, `*'
+
+** Concurrency
+   fibers, threads, processes
+
+** Metaprogramming
+*** method lookup
+    - always start from current class of `self'
+
+*** call method dynamically
+    - `send' or `public_send'
+    - `Method#call'
+    - eval family, `class/module/instance_eval'
+      when using `eval', it can be helpful to state explicitly the context in
+      which the expression should be evaluated
+
+*** constants loopup
+    - constants are looked up in the lexical scope where they were referenced
+
+*** hook methods
+**** method related hooks
+     - method_added, method_removed, method_undefined, method_missing
+     - singleton_method_added, singleton_method_removed, singleton_method_undefined
+**** class and module related hooks
+     - append_features, extend_object, extended, included, prepended
+     - inherited, initialize_clone, initialize_copy, initialize_dup
+**** object marshaling hooks
+     - marshal_dump, marshal_load
+**** coercion hooks
+     - coerce, induced_from, to_xxx
+
+*** refine
+    - use refine inside a module to add a monkeypatch
+    - activate it when use `using' that module which defines a refinement
+    - narrow down the monkeypatch inside a file or a module
+
+*** module
+    - `include' a module insert it in the ancestors chain above the class
+    - `prepend' a module insert it in [..] below the class
+    - a same module will be inserted only once for one ancestors chain
+
+*** method_missing
+    - when override this method, remember to override `respond_to_missing'
+    - be careful not to cause recursion
+    - use `undef_method' or `remove_method' to create a blank slate
+
+*** scope
+    - scope gate: `class' `module' `def'
+    - blocks have bindings(self, locals) to lexically where it defined
+    - use `instance_eval' to eval a block within a obj's scope
+    - current class is an implicit attribute, when using `instance_eval' the
+      current class is the singleton_class of the receiver, when using
+      `class_eval', the current class is just the receiver
+    - `instance_exec' & `class_exec' take only a block, and arguments given
+      to them are passed in as block parameters.  with the _exec form, 
+      variables out of scope can be passed into a block
+
+*** struct
+    - `Struct' class allows u to define class that contain just attributes
+#+BEGIN_SRC ruby
+Ex = Struct.new(:name, :age)
+e = Ex.new('hida')
+e.age = 99
+puts e
+#+END_SRC
+
+*** reflection
+    - use `ObjectSpace.each_object' to traverse all objects in the program
+
+** Command line options
+   - -c  check syntax only, not execute the program
+   - -C  change to directory before executing
+   - -d  set $DEBUG and $VERBOSE to true
+   - -I  specify directories to be prepended to $LOAD_PATH($:)
+   - -r  require library or gem before executing
+   - -l  enable automatic line-ending process, set $\ to $/
+   - -n  assume a `while gets; ...; end' loop around the program
+   - -p  assume a `while gets; ...; print; end' loop around the program
+   - -a  autosplit mode when used with -n or -p
+   - -F  specify the input field separator($;), affects -a
+
+*** Command line arguments
+    - ARGV  command line arguments, all the values are strings
+    - ARGF  initialized with a reference ARGV, a convenience object when handle
+      access to files as arguments
+    - $0  program name
+
+*** Environment
+    - use `ENV' to access operating system environment, `ENV' responds to the
+      same methods as `Hash'
+    - when ruby compiled, all relevant settings used to build it are written
+      to the module `RbConfig' within the library file rbconfig.rb
+
+*** Encoding
+    ruby has 3 separate encoding parts: source files, variables, IOs
+    - string literals are always encoded using the encoding of the source
+      file that contains them, and literals containing a \u sequence will
+      always be encoded UTF-8
+    - symbols and regular expression literals that contain only 7-bit characters
+      are encoded using US-ASCII, otherwise they will have the encoding of the
+      file that contains them
+
+** Other ruby facets
+   - rake  http://martinfowler.com/articles/rake.html
+   - Rspec
+   - Shoulda
+   - erb  Embedded ruby, ruby templating
+
+** Under the microscope
+   Ruby Source Code 
+   :rip => Tokens 
+   :parse => AST (abstract syntax tree)
+   :compile => YARV instructions (after 1.9)
+
+*** YARV
+    "a double-stack machine"
+    - internal stack: keep track of arguments and return values
+    - call stack: keep track of method calls
