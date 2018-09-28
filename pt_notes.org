@@ -1,0 +1,78 @@
+* PT
+
+** Types
+   - website hacking
+   - network hacking
+   - email hacking
+   - ethical hacking
+   - password hacking
+   - computer hacking
+
+** Tools
+   - Nmap: network mapper
+   - Metasploit: exploit tools
+   - Burp Suite: security testing platform
+   - Angry IP Scanner: lightweight ip address and port scanner
+   - Cain & Abel: password recovery tool for ms
+   - Ettercap: network security tool for man-in-the-middle attacks
+   - Etherpeek: network analysis in a multiprotocol environment
+   - Superscan: network administration tool
+   - QualysGuard: integrated suite of tools
+   - WebInspect: security assessment tool
+
+** Phases
+*** Reconnaissance
+    - gather info using active or passive means
+
+*** Scanning
+    - actively probe a target machine or network for vulnerabilities
+
+*** Gaining Access
+    - attempt to exploit the vulnerabilities to get into the system
+
+*** Maintaining Access
+    - install some backdoors in order to access the system when needs in
+      the future
+
+*** Clearing Tracks
+    - delete logs of all the activities during the process
+
+** Reconnaissance
+
+*** Types
+    - Active: directly interact with the target system to gain information.
+      there's a risk of getting detected
+    - Passive: not directly connected to the target system.
+
+*** Steps
+    - gather initial information
+    - determine the network range
+    - identify active machines
+    - discover open ports and access points
+    - fingerprint the operating system
+    - uncover services on ports
+    - map the network
+
+*** Footprinting
+    - gather possible information about target
+      - domain name
+      - ip addresses
+      - namespaces
+      - employee information
+      - phone numbers
+      - e-mails
+      - job information
+    - could be both active and passive
+    - tools:
+      - whois: find domain name information
+      - find ip ranges and related organization information
+
+*** Fingerprinting
+    - determine what operating system is running on target
+      - active
+      - passive
+    - tools:
+      - nmap
+
+
+

@@ -274,9 +274,9 @@ puts e
 
 ** Under the microscope
    Ruby Source Code 
-   :rip => Tokens 
-   :parse => AST (abstract syntax tree)
-   :compile => YARV instructions (after 1.9)
+   - :rip => Tokens 
+   - :parse => AST (abstract syntax tree)
+   - :compile => YARV instructions (after 1.9)
 
 *** YARV
     "a double-stack machine"
